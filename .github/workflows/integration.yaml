@@ -394,13 +394,14 @@ jobs:
       - name: Build Go
         if: steps.check-exist.outputs.exist == 'false'
         run: |  
-          git clone git@github.com:Pryz/go.git go-wasip1
+          git clone https://github.com/Pryz/go.git go-wasip1
           pushd go-wasip1
           git checkout dev-wasi-snapshot-preview1
           pushd src
           ./make.bash
           popd
-          cp ./bin/go /usr/local/bin/go-wasip1
+          cp ~/work/wazero/wazero/go-wasip1/bin/go /usr/local/bin/gowasip1
+          gowasip1 version
       - uses: actions/setup-go@v3
         if: steps.check-exist.outputs.exist == 'false'
         with:
@@ -408,30 +409,209 @@ jobs:
 
       - name: Build Test Binaries
         if: steps.check-exist.outputs.exist == 'false'
-        # The following list of packages is derived from:
-        # https://github.com/tinygo-org/tinygo/blob/v0.27.0/Makefile#L277-L324
-        # Note:
-        #  - index/suffixarray is extremely slow, so skip it.
-        #  - compress/zlib is skipped as it depends on the local files https://github.com/golang/go/blob/go1.20/src/compress/zlib/writer_test.go#L16-L30
-        #  - debug/macho is skipped as it depends on the local files https://github.com/golang/go/blob/go1.20/src/debug/macho/file_test.go#L25
+        # The following list of packages is coming from running : `find ./src -name '*_test.go' -exec dirname {} \; | sort | uniq`
+        # in the Go repository and manually filtering packages which don't make sense to be tested such as the 'cmd' package.
         run: |
           mkdir ${{ env.BINARY_OUT }}
-          for value in ./src/archive/tar
-            ./src/archive/zip
+          pushd go-wasip1
+          pwd
+          ls -la
+          for value in src/archive/tar \
+            src/archive/zip \
+            src/bufio \
+            src/bytes \
+            src/compress/bzip2 \
+            src/compress/flate \
+            src/compress/gzip \
+            src/compress/lzw \
+            src/compress/zlib \
+            src/container/heap \
+            src/container/list \
+            src/container/ring \
+            src/context \
+            src/crypto \
+            src/crypto/aes \
+            src/crypto/cipher \
+            src/crypto/des \
+            src/crypto/dsa \
+            src/crypto/ecdh \
+            src/crypto/ecdsa \
+            src/crypto/ed25519 \
+            src/crypto/elliptic \
+            src/crypto/hmac \
+            src/crypto/internal/alias \
+            src/crypto/internal/bigmod \
+            src/crypto/internal/boring \
+            src/crypto/internal/boring/bcache \
+            src/crypto/internal/edwards25519 \
+            src/crypto/internal/edwards25519/field \
+            src/crypto/internal/nistec \
+            src/crypto/internal/nistec/fiat \
+            src/crypto/md5 \
+            src/crypto/rand \
+            src/crypto/rc4 \
+            src/crypto/rsa \
+            src/crypto/sha1 \
+            src/crypto/sha256 \
+            src/crypto/sha512 \
+            src/crypto/subtle \
+            src/crypto/tls \
+            src/crypto/tls/fipsonly \
+            src/crypto/x509 \
+            src/database/sql \
+            src/database/sql/driver \
+            src/debug/buildinfo \
+            src/debug/dwarf \
+            src/debug/elf \
+            src/debug/gosym \
+            src/debug/macho \
+            src/debug/pe \
+            src/debug/plan9obj \
+            src/embed \
+            src/embed/internal/embedtest \
+            src/encoding/ascii85 \
+            src/encoding/asn1 \
+            src/encoding/base32 \
+            src/encoding/base64 \
+            src/encoding/binary \
+            src/encoding/csv \
+            src/encoding/gob \
+            src/encoding/hex \
+            src/encoding/json \
+            src/encoding/pem \
+            src/encoding/xml \
+            src/errors \
+            src/expvar \
+            src/flag \
+            src/fmt \
+            src/hash \
+            src/hash/adler32 \
+            src/hash/crc32 \
+            src/hash/crc64 \
+            src/hash/fnv \
+            src/hash/maphash \
+            src/html \
+            src/html/template \
+            src/image \
+            src/image/color \
+            src/image/draw \
+            src/image/gif \
+            src/image/jpeg \
+            src/image/png \
+            src/index/suffixarray \
+            src/internal/abi \
+            src/internal/buildcfg \
+            src/internal/coverage/cformat \
+            src/internal/coverage/cmerge \
+            src/internal/coverage/pods \
+            src/internal/coverage/slicereader \
+            src/internal/coverage/slicewriter \
+            src/internal/coverage/test \
+            src/internal/cpu \
+            src/internal/dag \
+            src/internal/diff \
+            src/internal/fmtsort \
+            src/internal/fuzz \
+            src/internal/godebug \
+            src/internal/intern \
+            src/internal/itoa \
+            src/internal/poll \
+            src/internal/profile \
+            src/internal/reflectlite \
+            src/internal/safefilepath \
+            src/internal/saferio \
+            src/internal/singleflight \
+            src/internal/testdir \
+            src/internal/testenv \
+            src/internal/trace \
+            src/internal/types/errors \
+            src/internal/unsafeheader \
+            src/internal/xcoff \
+            src/io \
+            src/io/fs \
+            src/io/ioutil \
+            src/log \
+            src/log/syslog \
+            src/maps \
+            src/math \
+            src/math/big \
+            src/math/bits \
+            src/math/cmplx \
+            src/math/rand \
+            src/mime \
+            src/mime/multipart \
+            src/mime/quotedprintable \
+            src/net \
+            src/net/http \
+            src/net/http/cgi \
+            src/net/http/cookiejar \
+            src/net/http/fcgi \
+            src/net/http/httptest \
+            src/net/http/httptrace \
+            src/net/http/httputil \
+            src/net/http/internal \
+            src/net/http/internal/ascii \
+            src/net/http/pprof \
+            src/net/internal/socktest \
+            src/net/mail \
+            src/net/netip \
+            src/net/rpc \
+            src/net/rpc/jsonrpc \
+            src/net/smtp \
+            src/net/textproto \
+            src/net/url \
+            src/os \
+            src/os/exec \
+            src/os/exec/internal/fdtest \
+            src/os/signal \
+            src/os/user \
+            src/path \
+            src/path/filepath \
+            src/plugin \
+            src/reflect \
+            src/regexp \
+            src/regexp/syntax \
+            src/runtime \
+            src/runtime/coverage \
+            src/runtime/debug \
+            src/runtime/internal/atomic \
+            src/runtime/internal/math \
+            src/runtime/internal/sys \
+            src/runtime/internal/syscall \
+            src/runtime/metrics \
+            src/runtime/pprof \
+            src/runtime/race \
+            src/runtime/trace \
+            src/slices \
+            src/sort \
+            src/strconv \
+            src/strings \
+            src/sync \
+            src/sync/atomic \
+            src/syscall \
+            src/syscall/js \
+            src/testing \
+            src/testing/fstest \
+            src/testing/iotest \
+            src/testing/quick \
+            src/text/scanner \
+            src/text/tabwriter \
+            src/text/template \
+            src/text/template/parse \
+            src/time \
+            src/unicode \
+            src/unicode/utf16 \
+            src/unicode/utf8
           do
-            GOOS=wasip1 GOARCH=wasm go-wasip1 test -c -o ${{ env.BINARY_OUT }}/${value/\//_}.test $value
+            GOOS=wasip1 GOARCH=wasm gowasip1 test -v -c -o ${{ env.BINARY_OUT }}/${value//\//_}.test ./$value
           done
 
-      - name: Checkout wazero
-        if: steps.check-exist.outputs.exist == 'false'
-        uses: actions/checkout@v3
-
       # TODO: use cache instead of artifacts as the cache is more consistent for this usecase (sharing between jobs)
-      - name: Upload tinygo-test-binary
+      - name: Upload go-test-binaries
         if: steps.check-exist.outputs.exist == 'false'
         uses: actions/upload-artifact@v3
         with:
-          name: go-test-binaries-${{ env.TINYGO_VERSION }}
+          name: go-test-binaries-${{ env.GO_VERSION }}
           path: |
             ${{ env.BINARY_OUT }}/*.test
 
@@ -448,8 +628,8 @@ jobs:
       - name: Checkout wazero
         uses: actions/checkout@v3
 
-      - name: Download the built binary
-        run: gh run download --name go-test-binaries-${{ env.TINYGO_VERSION }}
+      - name: Download the built binaries
+        run: gh run download --name go-test-binaries-${{ env.GO_VERSION }}
         env:
           # Necessary to use gh command.
           GH_TOKEN: ${{ github.token }}
@@ -467,7 +647,14 @@ jobs:
       # e.g. "-test.run '^TestStatBadDir$'"
       - name: Run standard library tests
         run: |
+          git clone https://github.com/Pryz/go.git go-wasip1
+
           for bin in *.test; do
             echo $bin
-            wazero run -mount=:/ -mount=:/tmp $bin -- -test.v
+            dir=${bin%.test}
+            dir=${dir//_/\/}
+            bin=$(realpath $bin)
+            pushd go-wasip1/$dir
+            wazero run -mount=/:/ -env PWD=$PWD $bin -- -test.v
+            popd
           done
