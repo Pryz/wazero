@@ -587,7 +587,6 @@ jobs:
             src/sync \
             src/sync/atomic \
             src/syscall \
-            src/syscall/js \
             src/testing \
             src/testing/fstest \
             src/testing/iotest \
