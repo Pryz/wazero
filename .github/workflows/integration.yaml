@@ -576,7 +576,6 @@ jobs:
             src/runtime/internal/atomic \
             src/runtime/internal/math \
             src/runtime/internal/sys \
-            src/runtime/internal/syscall \
             src/runtime/metrics \
             src/runtime/pprof \
             src/runtime/race \
