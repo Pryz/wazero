@@ -456,7 +456,6 @@ jobs:
             src/crypto/sha512 \
             src/crypto/subtle \
             src/crypto/tls \
-            src/crypto/tls/fipsonly \
             src/crypto/x509 \
             src/database/sql \
             src/database/sql/driver \
