@@ -414,8 +414,6 @@ jobs:
         run: |
           mkdir ${{ env.BINARY_OUT }}
           pushd go-wasip1
-          pwd
-          ls -la
           for value in src/archive/tar \
             src/archive/zip \
             src/bufio \
@@ -646,8 +644,11 @@ jobs:
         run: |
           git clone https://github.com/Pryz/go.git go-wasip1
 
+          ls -la 
+
+          echo "Running $(find . -name *.test | wc -l) test binaries"
+
           for bin in *.test; do
-            echo $bin
             dir=${bin%.test}
             dir=${dir//_/\/}
             bin=$(realpath $bin)
