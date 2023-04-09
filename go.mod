@@ -11,3 +11,5 @@ retract (
 	v1.0.0-beta.2
 	v1.0.0-beta.1
 )
+
+require github.com/ianlancetaylor/demangle v0.0.0-20230322204757-857afb9054cd

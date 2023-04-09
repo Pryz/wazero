@@ -33,6 +33,10 @@ func NewDWARFLines(d *dwarf.Data) *DWARFLines {
 	return &DWARFLines{d: d, linesPerEntry: map[dwarf.Offset][]line{}}
 }
 
+func (d *DWARFLines) Data() *dwarf.Data {
+	return d.d
+}
+
 // Line returns the line information for the given instructionOffset which is an offset in
 // the code section of the original Wasm binary. Returns empty string if the info is not found.
 func (d *DWARFLines) Line(instructionOffset uint64) (ret []string) {

@@ -512,6 +512,10 @@ func (e *engine) CompileModule(_ context.Context, module *wasm.Module, listeners
 		return err
 	}
 
+	//TODO: put behind a flag
+	perf := wasmdebug.NewPerfMap()
+	defer perf.Flush()
+
 	var withGoFunc bool
 	importedFuncs := module.ImportFunctionCount
 	funcs := make([]*code, len(module.FunctionSection))
@@ -524,21 +528,27 @@ func (e *engine) CompileModule(_ context.Context, module *wasm.Module, listeners
 		}
 		cmp.Init(ir, lsn != nil)
 		funcIndex := wasm.Index(i)
+		def := module.FunctionDefinitionSection[funcIndex+importedFuncs]
 		var compiled *code
 		if ir.GoFunc != nil {
 			withGoFunc = true
 			if compiled, err = compileGoDefinedHostFunction(cmp); err != nil {
-				def := module.FunctionDefinitionSection[funcIndex+importedFuncs]
 				return fmt.Errorf("error compiling host go func[%s]: %w", def.DebugName(), err)
 			}
 			compiled.goFunc = ir.GoFunc
 		} else if compiled, err = compileWasmFunction(cmp, ir); err != nil {
-			def := module.FunctionDefinitionSection[funcIndex+importedFuncs]
 			return fmt.Errorf("error compiling wasm func[%s]: %w", def.DebugName(), err)
 		}
 
 		// As this uses mmap, we need to munmap on the compiled machine code when it's GCed.
 		e.setFinalizer(compiled, releaseCode)
+
+		//TODO: put behind a flag
+		perf.AddEntry(
+			(*uint64)(unsafe.Pointer(&compiled.codeSegment[0])),
+			uint64(len(compiled.codeSegment)),
+			def.Name(),
+		)
 
 		compiled.listener = lsn
 		compiled.indexInModule = funcIndex

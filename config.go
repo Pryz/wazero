@@ -17,6 +17,7 @@ import (
 	internalsys "github.com/tetratelabs/wazero/internal/sys"
 	"github.com/tetratelabs/wazero/internal/sysfs"
 	"github.com/tetratelabs/wazero/internal/wasm"
+	"github.com/tetratelabs/wazero/internal/wasmdebug"
 	"github.com/tetratelabs/wazero/sys"
 )
 
@@ -322,6 +323,8 @@ type CompiledModule interface {
 	// Note: It is safe to call Close while having outstanding calls from an
 	// api.Module instantiated from this.
 	Close(context.Context) error
+
+	DWARFLines() *wasmdebug.DWARFLines
 }
 
 // compile-time check to ensure compiledModule implements CompiledModule
@@ -334,6 +337,10 @@ type compiledModule struct {
 	// closeWithModule prevents leaking compiled code when a module is compiled implicitly.
 	closeWithModule bool
 	typeIDs         []wasm.FunctionTypeID
+}
+
+func (c *compiledModule) DWARFLines() *wasmdebug.DWARFLines {
+	return c.module.DWARFLines
 }
 
 // Name implements CompiledModule.Name
