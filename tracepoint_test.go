@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
@@ -22,8 +23,13 @@ func TestTracepoint(t *testing.T) {
 
 	addParams := []uint64{42, 24}
 	addResult := []uint64{66}
+	var lat time.Duration
+	var start time.Time
 
 	builder.NewFunctionBuilder().WithGoModuleFunction(api.GoModuleFunc(func(ctx context.Context, mod api.Module, stack []uint64) {
+		start = time.Now()
+		t.Logf("tracepoint.call_add: %v", stack)
+
 		if !reflect.DeepEqual(stack, addParams) {
 			t.Log("got", stack)
 			t.Log("expected", addParams)
@@ -32,6 +38,9 @@ func TestTracepoint(t *testing.T) {
 	}), []api.ValueType{api.ValueTypeI32, api.ValueTypeI32}, []api.ValueType{}).Export("call_add")
 
 	builder.NewFunctionBuilder().WithGoModuleFunction(api.GoModuleFunc(func(ctx context.Context, mod api.Module, stack []uint64) {
+		lat = time.Since(start)
+		t.Logf("tracepoint.return_add: %v", stack)
+
 		if !reflect.DeepEqual(stack, addResult) {
 			t.Log("got", stack)
 			t.Log("expected", addResult)
@@ -59,6 +68,8 @@ func TestTracepoint(t *testing.T) {
 	if _, err := instance.ExportedFunction("add").Call(ctx, addParams...); err != nil {
 		t.Fatal(err)
 	}
+
+	t.Logf("latency: %v", lat)
 }
 
 func wasmdata(t *testing.T, path string) []byte {
